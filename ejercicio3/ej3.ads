@@ -49,7 +49,8 @@ procedure sistema is
         LOOP 
             SELECT 
                 central.signalP2(signal);
-            OR DELAY 60.0;
+            ELSE
+               DELAY 60.0;
             END SELECT;
         END LOOP;
 
@@ -83,3 +84,7 @@ procedure sistema is
 begin
     null;
 END sistema;
+
+
+
+-- hacer select when con las combianciones de las condiciones.

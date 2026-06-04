@@ -20,22 +20,25 @@ procedure guardia is
    END medico;
 
    TASK BODY medico IS 
-      variables : Integer := 0;
+      nota : text;
    BEGIN 
       LOOP 
          SELECT 
             ACCEPT pedidoPersona;
-            
+         OR
             WHEN(pedidoPersona'COUNT = 0) => 
-               SELECT 
-                  ACCEPT pedidoEnfermera;
-               ELSE 
-                  ACCEPT notaEnfermera;
-               END SELECT;
+               ACCEPT pedidoEnfermera;
+         ELSE
+            SELECT 
+               escritorio.pedirNota(nota);
+               if(nota /= "vacio")then
+                  resolverNota(nota);
+               END if;
+            ELSE 
+               NULL;
+            END SELECT;
          END SELECT; 
       END LOOP;
-            
-
    END medico;
 
    TASK TYPE enfermera;
@@ -72,21 +75,23 @@ procedure guardia is
       intentos: Integer:= 0;
       sigo : boolean:= true;
    BEGIN 
-      SELECT 
-         medico.pedidoPersona;
-      OR DELAY 300.0;
-         while(intentos < 3) and (sigo) LOOP 
-            SELECT
-               medico.pedidoPersona; 
-               sigo := false;
-            OR DELAY 600.0; -- esta mal ya que una vez que llegó a los tres intentos y no lo atendieron, igual espera 10 min
-               intentos := intentos + 1;
-            END SELECT; 
-         END LOOP; 
-      END SELECT;
+
+      while(intentos < 3) and (sigo) LOOP 
+         SELECT
+            medico.pedidoPersona; 
+            sigo := false;
+         OR DELAY 300.0;
+            DELAY 600.0; -- esta mal ya que una vez que llegó a los tres intentos y no lo atendieron, igual espera 10 min
+            intentos := intentos + 1;
+         END SELECT; 
+      END LOOP; 
+   
 
    END persona;
 
+   TASK escritorio IS 
+      ENTRY pedirNota;
+   END escritorio;
 
 BEGIN
    null;
