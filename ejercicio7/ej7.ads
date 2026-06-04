@@ -10,7 +10,7 @@
 
 procedure playa is 
    TASK juego IS 
-      ENTRY equipoGanador(monedas, nroEquipo);
+      ENTRY equipoGanador( monedas : IN Integer; nroEquipo : IN Integer; ganador : OUT Integer);
    END juego;
 
 
@@ -18,18 +18,46 @@ procedure playa is
       ENTRY comenzarJuego;
    END equipo;
 
-   equipos : array (1.20) of equipo;
+   equipos : array (1..20) of equipo;
+
+   -- Si espero a que haya 4 jugadores para hacer el accept y aprovechar la bidireccionalidad del canal, 
+   -- se produce busy waiting.
+   -- tengo que hacer que los jugadores lleguen, aceptarlos mientras lleguen y cuando hayan llegado todos
+   -- enviarles otro mensaje para que comiencen?
+   -- o tengo que hacer un ACCEPT DO? no se como
 
    TASK BODY equipo IS 
+      sigo : boolean := true;
+   BEGIN
+      while(sigo) LOOP
+      -- SELECT 
+      --   WHEN (comenzarJuego'COUNT = 4) =>
+      --       ACCEPT
+      -- imaginemos que ya llegaron y que ya inicio el juego
+      
+      END LOOP;  
+
    END equipo;
 
    TASK jugador IS 
       
    END jugador;
 
-   jugadores : array (1.20) of jugador;
+   jugadores : array (1..20) of jugador;
 
    TASK BODY jugador IS 
+      nroEquipo : Integer; --ya asignado
+      monedas : Integer := 0;
+   BEGIN 
+      equipo.comenzarJuego;
+      -- imaginemos que ya llegaron y que ya inicio el juego
+      for I in 1 .. 10 LOOP
+         monedas := monedas + Moneda();
+      END LOOP;
+      -- aca es lo mismo, debería mandar mis monedas con mi grupo, que el juego calcule el ganador
+      -- cuando ya hayan llegado todos y recién ahí puedo contestar.
+
+
    END jugador;
 
 
