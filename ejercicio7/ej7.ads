@@ -10,37 +10,63 @@
 
 procedure playa is 
    TASK juego IS 
-      ENTRY equipoGanador( monedas : IN Integer; nroEquipo : IN Integer; ganador : OUT Integer);
+      ENTRY calcularGanador(monedas : IN Integer; nroEquipo : IN Integer);
    END juego;
 
+   TASK juego IS
+      max : Integer := -1;
+      equipoMax : Integer := 0;
+   BEGIN
+      for I in 1 .. 4 LOOP
+         equipos(I).ident(I);
+      END LOOP 
+      for I in 1 .. 5 LOOP
+         ACCEPT calcularGanador(monedas : IN Integer; nroEquipo : IN Integer) DO
+            if(monedas > max)then
+               max := monedas;
+               equipoMax := nroEquipo;
+            END if;
+      END LOOP;
+
+      for I in 1 .. 20 LOOP
+         jugador(I).equipoGanador(equipoMax);
+      END LOOP
+
+   END;
 
    TASK equipo IS 
-      ENTRY comenzarJuego;
+      ENTRY llegoJugador;
+      ENTRY terminoJugador(monedas : IN Integer);
+      ENTRY ident(pos : IN Integer);
    END equipo;
 
-   equipos : array (1..20) of equipo;
-
-   -- Si espero a que haya 4 jugadores para hacer el accept y aprovechar la bidireccionalidad del canal, 
-   -- se produce busy waiting.
-   -- tengo que hacer que los jugadores lleguen, aceptarlos mientras lleguen y cuando hayan llegado todos
-   -- enviarles otro mensaje para que comiencen?
-   -- o tengo que hacer un ACCEPT DO? no se como
+   equipos : array (1..4) of equipo;
 
    TASK BODY equipo IS 
-      sigo : boolean := true;
+      id : Integer; 
+      totalMonedas : Integer := 0;
    BEGIN
-      while(sigo) LOOP
-      -- SELECT 
-      --   WHEN (comenzarJuego'COUNT = 4) =>
-      --       ACCEPT
-      -- imaginemos que ya llegaron y que ya inicio el juego
-      
-      END LOOP;  
+      ACCEPT ident(pos : IN Integer) DO
+         id := pos;
+      END ident;
 
+      for I in 1 .. 4 LOOP
+         ACCEPT llegoJugador;
+      END LOOP;
+      for I in 1 .. 4 LOOP
+         jugadores(I).comenzarJuego;
+      END LOOP;
+      for I in 1 .. 4 LOOP
+         ACCEPT terminoJugador(monedas : IN Integer);
+         totalMonedas := totalMonedas + monedas;
+      END LOOP;
+
+      juego.calcularGanador(totalMonedas, id);
    END equipo;
 
    TASK jugador IS 
-      
+      ENTRY comenzarJuego;
+      ENTRY equipoGanador(jugadorGanador : Integer IN);
    END jugador;
 
    jugadores : array (1..20) of jugador;
@@ -48,15 +74,17 @@ procedure playa is
    TASK BODY jugador IS 
       nroEquipo : Integer; --ya asignado
       monedas : Integer := 0;
+      ganador : Integer;
    BEGIN 
-      equipo.comenzarJuego;
-      -- imaginemos que ya llegaron y que ya inicio el juego
-      for I in 1 .. 10 LOOP
+      equipo(nroEquipo).llegoJugador;
+      ACCEPT comenzarJuego:
+      for I in 1 .. 15 LOOP
          monedas := monedas + Moneda();
       END LOOP;
-      -- aca es lo mismo, debería mandar mis monedas con mi grupo, que el juego calcule el ganador
-      -- cuando ya hayan llegado todos y recién ahí puedo contestar.
-
+      equipo.terminoJugador(monedas);
+      ACCEPT equipoGanador(eGanador : Integer IN) DO
+         ganador := eGanador;
+      END equipoGanador;
 
    END jugador;
 
