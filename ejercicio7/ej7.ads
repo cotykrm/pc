@@ -13,26 +13,24 @@ procedure playa is
       ENTRY calcularGanador(monedas : IN Integer; nroEquipo : IN Integer);
    END juego;
 
-   TASK juego IS
+   TASK BODY juego IS
       max : Integer := -1;
       equipoMax : Integer := 0;
    BEGIN
-      for I in 1 .. 4 LOOP
-         equipos(I).ident(I);
-      END LOOP 
       for I in 1 .. 5 LOOP
          ACCEPT calcularGanador(monedas : IN Integer; nroEquipo : IN Integer) DO
             if(monedas > max)then
                max := monedas;
                equipoMax := nroEquipo;
             END if;
+         END calcularGanador;
       END LOOP;
 
       for I in 1 .. 20 LOOP
          jugador(I).equipoGanador(equipoMax);
-      END LOOP
+      END LOOP;
 
-   END;
+   END juego;
 
    TASK equipo IS 
       ENTRY llegoJugador;
@@ -54,11 +52,12 @@ procedure playa is
          ACCEPT llegoJugador;
       END LOOP;
       for I in 1 .. 4 LOOP
-         jugadores(I).comenzarJuego;
+         jugadores(I).comenzarJuego; -- debe ser el id del jugador
       END LOOP;
       for I in 1 .. 4 LOOP
-         ACCEPT terminoJugador(monedas : IN Integer);
-         totalMonedas := totalMonedas + monedas;
+         ACCEPT terminoJugador(monedas : IN Integer) DO
+            totalMonedas := totalMonedas + monedas;
+         END terminoJugador;
       END LOOP;
 
       juego.calcularGanador(totalMonedas, id);
@@ -66,7 +65,7 @@ procedure playa is
 
    TASK jugador IS 
       ENTRY comenzarJuego;
-      ENTRY equipoGanador(jugadorGanador : Integer IN);
+      ENTRY equipoGanador(jugadorGanador : IN Integer);
    END jugador;
 
    jugadores : array (1..20) of jugador;
@@ -77,12 +76,12 @@ procedure playa is
       ganador : Integer;
    BEGIN 
       equipo(nroEquipo).llegoJugador;
-      ACCEPT comenzarJuego:
+      ACCEPT comenzarJuego;
       for I in 1 .. 15 LOOP
-         monedas := monedas + Moneda();
+         monedas := monedas + Moneda;
       END LOOP;
-      equipo.terminoJugador(monedas);
-      ACCEPT equipoGanador(eGanador : Integer IN) DO
+      equipo(nroEquipo).terminoJugador(monedas);
+      ACCEPT equipoGanador(eGanador : IN Integer) DO
          ganador := eGanador;
       END equipoGanador;
 
@@ -90,5 +89,7 @@ procedure playa is
 
 
 BEGIN
-   null;
+   for I in 1 .. 5 LOOP
+      equipos(I).ident(I);
+   END LOOP;
 END playa;

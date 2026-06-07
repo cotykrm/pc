@@ -25,7 +25,7 @@ procedure sistema is
 
    TASK usuario;
 
-   usuarios: array 
+   usuarios: array (1..U) of usuario;
 
    TASK BODY usuario is
       doucmento: text; 
@@ -35,8 +35,9 @@ procedure sistema is
       while(hayErrores) LOOP 
          SELECT 
             servidor.recibirDocumento(doucmento,hayErrores);
-            if(hayErrores)
+            if(hayErrores)then
                documento := trabajarDoucmento(documento);
+            END IF;
          OR DELAY 120.0;
             DELAY 60.0;
          END SELECT;
