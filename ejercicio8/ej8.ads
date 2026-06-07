@@ -12,10 +12,59 @@
 --  parámetros de salida el código y el valor de similitud de la huella más parecida 
 --  a test en la BD correspondiente. Maximizar la concurrencia y no generar demora 
 --  innecesaria.
+
+-- para maximizar la concurrencia tengo que hacer que los servidores le pidan un 
+-- test al especializta, porque si no, el especialista tiene que esperar que se 
+-- haga el ACCEPT de cada servidor al que se le envia la imagen para poder mandarsela
+-- al siguiente servidor, ademas, como especialista tengo que, para maximizar la
+-- concurrencia, poder recibir resultados, coo pedidos a la vez, entonces
+-- los servidores deben solicitar, para poder elegir entre accepts
+
+-- al final, los servidores no necesitan su id, proque todo pasa dentro del accept 
+-- del pedido de imagen, usando la variable test : OUT
+
 procedure sistema is
 
-TASK servidor IS 
+TASK servidor;
 
+TASK especialista IS 
+   ENTRY enviarImagen(test : OUT text);
+   ENTRY resultado(codigo : IN Integer; valor : IN Float);
+END especialista;
+
+servidores : array (1..8) of servidor;
+
+TASK BODY servidor IS 
+   id : Integer; valor : Float; codigo : Integer; 
+BEGIN 
+   LOOP 
+      especialista.enviarImagen(test);
+      Buscar(test, codigo, valor);
+      especialista.resultado (codigo, valor);
+   END LOOP; 
+END; 
+
+TASK BODY especialista IS 
+   test : text; codigoMax: Integer; max : Integer := -1;
+BEGIN 
+   LOOP 
+      for I in 1 .. 16 LOOP
+         SELECT 
+            ACCEPT enviarImagen(test : OUT text) DO
+               test := tomarImagen;
+            END enviarImagen;
+         OR      
+            ACCEPT resultado (codigo : IN Integer; valor : IN Float) DO
+               IF(valor > max)THEN 
+                  max := valor;
+                  codigoMax := codigo;
+               END IF;
+            END resultado;
+         END SELECT;
+      END LOOP;
+   END LOOP;
+
+END;
 
 BEGIN
    null;
